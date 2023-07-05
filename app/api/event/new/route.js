@@ -2,7 +2,6 @@ import Event from "@/model/Events";
 import dbConnect from "@/utils/datebase";
 
 export const POST = async (req) => {
-  console.log("REached");
   const { userId, title, description, date, time, notifyBefore } =
     await req.json();
 

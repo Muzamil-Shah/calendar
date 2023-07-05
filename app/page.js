@@ -2,7 +2,6 @@
 import EventContainer from "@/components/EventContainer";
 import { getYearDates } from "@/utils";
 import dayjs from "dayjs";
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 const timeslot = {
@@ -145,7 +144,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between ">
-      <div className="w-full h-32 fixed flex flex-col justify-end items-start z-10 bg-white top-0">
+      <div className="w-full h-32 flex flex-col justify-end items-start z-10 bg-white top-0">
         <div className="w-full h-10 flex justify-start items-start space-x-2">
           <div className="p-2">
             <select className="p-1">
