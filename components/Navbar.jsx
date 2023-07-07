@@ -16,7 +16,7 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div className="w-full h-10 flex justify-end items-center space-x-2">
+    <div className="w-full h-10 z-20 bg-white fixed top-0 flex justify-end items-center space-x-2">
       {providers ? (
         Object.values(providers).map((provider) => <button key={provider.name} onClick={() => signIn(provider.id)}>Sign In</button>)
       ) : (

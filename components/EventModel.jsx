@@ -1,18 +1,27 @@
+'use client'
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
-const EventModel = ({ isOpen, onClose, date, time }) => {
+const EventModel = ({ isOpen, onClose, date, time, event }) => {
+  const router = useRouter()
+  const paramsID = event?._id
+  const [editable, setEditable] = useState(event ? true : false)
   const [formData, setFormData] = useState({
-    userId: "",
-    title: "",
-    description: "",
+    userId: event?.userId || "",
+    title: event?.title || "",
+    description: event?.description || "",
     date: date,
     time: time,
-    notifyBefore: "30",
+    notifyBefore: event?.notifyBefore || "30",
   });
 
   const handleChange = (e) => {
     setFormData((pre) => ({ ...pre, [e.target.name]: e.target.value }));
   };
+
+  const handleEdit = () => {
+    setEditable((pre) => !pre)
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,23 +31,60 @@ const EventModel = ({ isOpen, onClose, date, time }) => {
         method: "POST",
         body: JSON.stringify(formData),
       });
-      const data = await response.JSON();
-      console.log("data: ", data);
+      onClose()
+      if (response.ok) {
+        router.push('/')
+      }
     } catch (error) {
       console.log(error.message);
     }
   };
 
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!paramsID) return alert('Prompt ID not found')
+    try {
+      const response = await fetch(`/api/event/${paramsID}`, {
+        method: "PATCH",
+        body: JSON.stringify(formData),
+      });
+      onClose()
+      if (response.ok) {
+        router.push('/')
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+  const handleDelete = async () => {
+    const hasConfirmed = confirm('Are you sure you want to delete this event?')
+    if (hasConfirmed) {
+      try {
+        const response = await fetch(`/api/event/${paramsID.toString()}`, {
+          method: "DELETE",
+        });
+        onClose()
+        if (response.ok) {
+          router.push('/')
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+  }
+
   return (
     <div
-      className={`fixed inset-0 flex items-center justify-center ${
-        isOpen ? "visible" : "invisible"
-      }`}
+      className={`fixed inset-0 z-50 flex items-center justify-center ${isOpen ? "visible" : "invisible"
+        }`}
     >
       <div className="bg-white w-80 rounded-lg p-6 shadow-xl">
         {/* Modal content goes here */}
-        <h2 className="text-xl font-bold mb-4">Add Event</h2>
-        <form className="w-full space-y-2" onSubmit={handleSubmit}>
+        <div className="w-full flex justify-between items-center">
+          <h2 className="text-xl font-bold mb-4">Add Event</h2>
+          {event && <div><button type="button" onClick={handleDelete} className="text-base font-bold mb-4 p-1 rounded border">Delete</button><button type="button" onClick={handleEdit} className="text-base font-bold mb-4 p-1 rounded border">Edit</button></div>}
+        </div>
+        <form className="w-full space-y-2" onSubmit={event ? handleUpdate : handleSubmit}>
           <div className="flex justify-start items-center space-x-3">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -62,25 +108,28 @@ const EventModel = ({ isOpen, onClose, date, time }) => {
             </div>
           </div>
           <input
+            disabled={editable}
             name="title"
             placeholder="Event title"
             value={formData.title}
             onChange={handleChange}
-            className="w-full p-2 border-b bg-gray-100 rounded border-blue-200"
+            className={`w-full p-2 border-b bg-gray-100 ${editable ? 'text-gray-500' : 'text-black'} rounded border-blue-200`}
           />
           <input
+            disabled={editable}
             name="notifyBefore"
             placeholder="Event notifyBefore"
             value={formData.notifyBefore}
             onChange={handleChange}
-            className="w-full p-2 border-b bg-gray-100 rounded border-blue-200"
+            className={`w-full p-2 border-b bg-gray-100 ${editable ? 'text-gray-500' : 'text-black'} rounded border-blue-200`}
           />
           <textarea
+            disabled={editable}
             onChange={handleChange}
             value={formData.description}
             name="description"
             placeholder="Event description"
-            className="w-full p-2 border-b bg-gray-100 rounded border-blue-200"
+            className={`w-full p-2 border-b bg-gray-100 ${editable ? 'text-gray-500' : 'text-black'} rounded border-blue-200`}
           />
           <div className="w-full flex justify-end items-center space-x-2">
             <button
@@ -90,12 +139,17 @@ const EventModel = ({ isOpen, onClose, date, time }) => {
             >
               Close
             </button>
-            <button
+            {!event ? <button
               className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
               type="submit"
             >
               Save
-            </button>
+            </button> : !editable ? <button
+              className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
+              type="submit"
+            >
+              Update
+            </button> : null}
           </div>
         </form>
       </div>
