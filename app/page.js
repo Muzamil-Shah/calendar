@@ -139,7 +139,6 @@ export default function Home() {
   };
 
   const findCurrentMonth = (value) => {
-    console.log('selectedMonth',value)
     setStartAndEnd({
       start: yearDates.indexOf(
         dayjs(`2023-${value}-01`).startOf("week").format('YYYY-MM-DD')
@@ -162,7 +161,6 @@ export default function Home() {
         const endDate = encodeURIComponent(weekDays[6]);
         const response = await fetch(`/api/event?startDate=${startDate}&endDate=${endDate}`);
         const data = await response.json();
-        console.log("data: ", data);
         setEvents(data)
       } catch (error) {
         console.log(error.message);
@@ -170,6 +168,30 @@ export default function Home() {
     }
     fetchData()
   }, [weekDays])
+  const showNotification = (time,notifyBefore,title) => {
+    const currentTime = dayjs();
+    const targetTime = dayjs(time);
+    const diffMinutes = targetTime.diff(currentTime, 'minutes');
+    if (diffMinutes == notifyBefore) {
+      toast.info(`You have ${title} in next  ${diffMinutes} minutes!`, {
+        position: toast.POSITION.TOP_RIGHT,
+      });
+    }
+  };
+  
+  useEffect(() => {
+    const timer = setInterval(() => {
+    events.filter(event => dayjs(event.date).add(1,'day').format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD')).map(event => {
+    // Your desired time, change it to your specific time format
+    const targetTime = `${dayjs(event.date).add(1,'day').format('YYYY-MM-DD')} ${event.time.from}`;
+    const title = event.title;
+    const notifyBefore = event.notifyBefore
+    return showNotification(targetTime,notifyBefore,title);
+  })
+    }, 1000 * 60 ); // Check every minute
+
+    return () => clearInterval(timer); // Clean up the timer on unmount
+  }, []);
   return (
     <main className="flex min-h-screen flex-col items-center justify-between ">
       <div className="w-full h-32 fixed z-20 top-10 flex flex-col justify-end items-start z-10 bg-white top-0">

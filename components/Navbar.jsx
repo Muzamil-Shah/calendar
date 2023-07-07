@@ -22,7 +22,7 @@ const Navbar = () => {
       ) : (
         <button>Log In</button>
       )}
-      <Image width={20} height={20} src={session?.user?.image} />
+      <Image width={20} height={20} src={session?.user?.image ? session?.user?.image :'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg' } alt="image" />
     </div>
   );
 };
